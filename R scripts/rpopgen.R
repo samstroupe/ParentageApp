@@ -32,16 +32,26 @@ ploidy(gl.object) <- 2
 pop(gl.object) <- pop.data$Population
 
 gl.object
+output$gl <- renderPrint(gl.object)
+
+########### Subset VCF 1000 random varients ###############
+
+subset.1 <- sample(size = 1000, x= c(1:nrow(input.VCF)))
+input.VCF.sub1 <- input.VCF[subset.1,]
+
+write.vcf(input.VCF.sub1, "VCFsub1")
+
+VCF <- read.vcfR("VCFsub1")
 
 
+############ Tree #################
 
-
-tree <- aboot(gl.test2, tree = "upgma",
+tree <- aboot(gl.object, tree = "upgma",
               distance = bitwise.dist, sample = 100, showtree = F,
               cutoff = 50, quiet = T)
 
-cols <- brewer.pal(n = nPop(gl.test2), name = "Dark2")
-plot.phylo(tree, cex = 0.8, font = 2, adj = 0, tip.color =  cols[pop(gl.test2)])
+cols <- brewer.pal(n = nPop(gl.object), name = "Dark2")
+plot.phylo(tree, cex = 0.8, font = 2, adj = 0, tip.color =  cols[pop(gl.object)])
 nodelabels(tree$node.label, adj = c(1.3, -0.5), frame = "n", cex = 0.8,font = 3, xpd = TRUE)
 legend('topleft', legend = c("B. bubalis", "Cattle", "Plains", "Wood"), fill = cols,
        border = FALSE, bty = "n", cex = 2)
@@ -50,14 +60,14 @@ title(xlab = "Genetic distance (proportion of loci that are different)")
 
 
 ########### PCA Plot
-pca <- glPca(gl.test2, nf = 4)
+pca <- glPca(gl.object)
 barplot(100*pca$eig/sum(pca$eig), col = heat.colors(50), main="PCA Eigenvalues")
 title(ylab="Percent of variance\nexplained", line = 2)
 title(xlab="Eigenvalues", line = 1)
 
 
 pca.scores <- as.data.frame(pca$scores)
-pca.scores$pop <- pop(gl.test2)
+pca.scores$pop <- pop(gl.object)
 
 
 set.seed(9)

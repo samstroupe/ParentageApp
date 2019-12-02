@@ -3,7 +3,12 @@ library(sequoia)
 library(Rcpp)
 library(pedantics)
 library(kinship2)
-library(shinycssloaders)
+library(ggplot2)
+library(vcfR)
+library(poppr)
+library(ape)
+library(RColorBrewer)
+library(reshape2)
 
 ###### UI #######
 ui <- fluidPage(
@@ -19,12 +24,17 @@ ui <- fluidPage(
         fileInput("Geno", label = h3("Genotype File input")),
         
         fileInput("LHis", label = h3("Life History File input")),
-        
         actionButton("run", "Run"),
         
-        radioButtons("radio", label = h3("Plot Pedigree"),
+         radioButtons("radio", label = h3("Plot Pedigree"),
                      choices = list("Pedigree 1" = 1, "Pedigree 2" = 2), 
-                     selected = 1)
+                     selected = 1),
+        
+        fileInput("VCF", label = h3("VCF File input")),
+        fileInput("Pop", label = h3("Population File input")),
+        actionButton("runvcf", "Run VCF")
+        
+       
       ),
     
       # Show the pedigree
@@ -32,11 +42,17 @@ ui <- fluidPage(
           
         # Output: Tabset
         tabsetPanel(type = "tabs",
-                    tabPanel("Parentage Assignment",# Button
-                             withSpinner(downloadButton("downloadData", "Download")),
+                    tabPanel("Parentage Assignment",
+                             downloadButton("downloadData", "Download"),
                              tableOutput("assignment")
                              ),
-                    tabPanel("Pedigree Plot", plotOutput("pedigree"))
+                    tabPanel("Pedigree Plot", plotOutput("pedigree")),
+                    tabPanel("VCF Summary", verbatimTextOutput("vcfsum"),
+                             verbatimTextOutput("allInclude"), 
+                             verbatimTextOutput("gl"),
+                             plotOutput("eigenval")),
+                    tabPanel("PCA Plot", plotOutput("PCA")),
+                    tabPanel("Structure Plot", plotOutput("Structure"))
                     
         )
       )
@@ -48,16 +64,6 @@ ui <- fluidPage(
 ########### SERVER #############
 server <- function(input, output) {
   
-  output$myImage <- renderImage({
-    # A temp file to save the output.
-    # This file will be removed later by renderImage
-    outfile <- tempfile(fileext = '.png')
-    
-    # Generate the PNG
-    png(outfile, width = 400, height = 300)
-    hist(rnorm(input$obs), main = "Generated in renderImage()")
-    dev.off()
-  })
   
  observeEvent(input$run, {
     # Read in the Life History File
@@ -65,7 +71,10 @@ server <- function(input, output) {
    if (is.null(LHisFile))
      return(NULL)
    LHis <- read.csv(LHisFile$datapath)
-    LHis2 <- LHis  
+    # Remove population column for sequoia
+    LHis1 <- LHis[ , c("ID", "Sex", "BY")]
+    # Life History for pedigree 2
+    LHis2 <- LHis
 
     # Read in the Genotype File
    GenoFile <- input$Geno
@@ -76,10 +85,10 @@ server <- function(input, output) {
    Geno <- Geno[,-1]
    Geno <- as.matrix(Geno)
 
-   levels(LHis$Sex) <- sub("female", "1", levels(LHis$Sex))
-   levels(LHis$Sex) <- sub("male", "2", levels(LHis$Sex))
+   levels(LHis1$Sex) <- sub("female", "1", levels(LHis1$Sex))
+   levels(LHis1$Sex) <- sub("male", "2", levels(LHis1$Sex))
     ParOUT <- sequoia(GenoM = Geno,
-                    LifeHistData = LHis,
+                    LifeHistData = LHis1,
                     MaxSibIter = 0)
 
     SeqOUT <- sequoia(GenoM = Geno,
@@ -121,6 +130,71 @@ server <- function(input, output) {
   plot
   })
   })
+ 
+ observeEvent(input$runvcf, {
+   # read in VCF File
+   VCFFile <- input$VCF
+   input.VCF <- read.vcfR(VCFFile$datapath)
+   # read in Population txt File
+   PopFile <- input$Pop
+   if (is.null(PopFile))
+     return(NULL)
+   pop.data <- read.csv(PopFile$datapath)
+
+   # VCF summary output
+   output$vcfsum <- renderPrint(input.VCF)
+   
+   # We can now check that all the samples in the VCF and the population data frame are included:
+   output$allInclude <- renderPrint(all(colnames(input.VCF@gt)[-1] == pop.data$AccessID))
+   
+   # Converting the dataset to a genlight object
+   gl.object <- vcfR2genlight(input.VCF)
+   
+   # Specify ploidy
+   ploidy(gl.object) <- 2
+   
+   # Add population data to genlight object
+   pop(gl.object) <- pop.data$Population
+   
+   # genlight object summary output
+   output$gl <- renderPrint(gl.object)
+   
+   pca <- glPca(gl.object, nf = 4)
+   output$eigenval <- renderPlot(barplot(100*pca$eig/sum(pca$eig), col = heat.colors(50), 
+                                         main="PCA Eigenvalues", 
+                                         ylab="Percent of variance explained",  
+                                         xlab="Eigenvalues"))
+   
+   # Create a PCA plot
+   pca.scores <- as.data.frame(pca$scores)
+   pca.scores$pop <- pop(gl.object)
+      
+   set.seed(9) # random seed
+   output$PCA <- renderPlot(ggplot(pca.scores, aes(x=PC1, y=PC2, colour=pop)) + 
+     geom_point(size=2) + 
+     stat_ellipse(level = 0.95, size = 1) + 
+     geom_hline(yintercept = 0) + 
+     geom_vline(xintercept = 0))
+   
+   # Create a compoplot or Structure Plot
+   pnw.dapc <- dapc(gl.object, n.pca = 4, n.da = nlevels(gl.object$pop)-1)
+   
+   dapc.results <- as.data.frame(pnw.dapc$posterior)
+   dapc.results$pop <- pop(gl.object)
+   dapc.results$indNames <- rownames(dapc.results)
+   
+   dapc.results <- melt(dapc.results)
+   
+   colnames(dapc.results) <- c("Original_Pop","Sample","Assigned_Pop","Posterior_membership_probability")
+   
+   output$Structure <- renderPlot(ggplot(dapc.results, aes(x=Sample, 
+                                                y=Posterior_membership_probability,
+                                                fill=Assigned_Pop)) + 
+     geom_bar(stat='identity') + 
+     facet_grid(~Original_Pop, scales = "free") + 
+     theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8)))
+ })
+ 
 }
 
 # Run the application 
