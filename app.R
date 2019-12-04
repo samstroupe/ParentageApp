@@ -34,9 +34,10 @@ ui <- fluidPage(
         fileInput("Pop", label = h3("Population File input (.csv)")),
         actionButton("runvcf", "Run VCF"),
         radioButtons("PCradio", label = h3("Radio buttons"),
-                     choices = list("Optimal number of PCs retained" = 1, 
-                                    "PCs that account for 80% of variance" = 2), 
-                     selected = 2)
+                     choices = list("4 PCs retained" = 1,
+                                    "Optimal number of PCs determined by a-score retained" = 2,
+                                    "PCs that account for 80% of variance" = 3), 
+                     selected = 1)
         
        
       ),
@@ -169,19 +170,23 @@ server <- function(input, output) {
    output$gl <- renderPrint(gl.object)
   
    ## Number of PCs to use in Analysis  
+    pca <- glPca(gl.object, nf = 4)
+   pnw.dapc <- dapc(gl.object, n.pca = 4, n.da = nlevels(gl.object$pop)-1)
+   
    # Optimal number of PCs based off of a-score
    optim.num <- optim.a.score(pnw.dapc)
    optim.num$best
    # Number of eigenvalues to retain to account for 80% of the variation
    w <- which(cumsum(100*pca$eig/sum(pca$eig)) >= 80)
    
-   pca <- glPca(gl.object, nf = w[1])
-   pnw.dapc <- dapc(gl.object, n.pca = w[1], n.da = nlevels(gl.object$pop)-1)
-   
+  # PC Radio buttons
    if (input$PCradio == 1){
+     pc.num <- 4
+   }
+   if (input$PCradio == 2){
      pc.num <- optim.num$best
     }
-   if (input$PCradio == 2){
+   if (input$PCradio == 3){
      pc.num <- w[1]
    }
    
