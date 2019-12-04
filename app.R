@@ -23,16 +23,20 @@ ui <- fluidPage(
       sidebarPanel(
         fileInput("Geno", label = h3("Genotype File input")),
         
-        fileInput("LHis", label = h3("Life History File input")),
-        actionButton("run", "Run"),
+        fileInput("LHis", label = h3("Life History File input (.csv)")),
+        actionButton("run", "Run Parentage"),
         
          radioButtons("radio", label = h3("Plot Pedigree"),
                      choices = list("Pedigree 1" = 1, "Pedigree 2" = 2), 
                      selected = 1),
         
         fileInput("VCF", label = h3("VCF File input")),
-        fileInput("Pop", label = h3("Population File input")),
-        actionButton("runvcf", "Run VCF")
+        fileInput("Pop", label = h3("Population File input (.csv)")),
+        actionButton("runvcf", "Run VCF"),
+        radioButtons("PCradio", label = h3("Radio buttons"),
+                     choices = list("Optimal number of PCs retained" = 1, 
+                                    "PCs that account for 80% of variance" = 2), 
+                     selected = 2)
         
        
       ),
@@ -48,7 +52,8 @@ ui <- fluidPage(
                              ),
                     tabPanel("Pedigree Plot", plotOutput("pedigree")),
                     tabPanel("VCF Summary", verbatimTextOutput("vcfsum"),
-                             verbatimTextOutput("allInclude"), 
+                             textOutput("allIncludetext"),
+                             verbatimTextOutput("allInclude"),
                              verbatimTextOutput("gl"),
                              plotOutput("eigenval")),
                     tabPanel("PCA Plot", plotOutput("PCA")),
@@ -131,6 +136,8 @@ server <- function(input, output) {
   })
   })
  
+  
+      ### VCF ###
  observeEvent(input$runvcf, {
    # read in VCF File
    VCFFile <- input$VCF
@@ -145,6 +152,8 @@ server <- function(input, output) {
    output$vcfsum <- renderPrint(input.VCF)
    
    # We can now check that all the samples in the VCF and the population data frame are included:
+   output$allIncludetext <- renderText(" All samples are included in the VCF File and 
+                                       the population data frame.")
    output$allInclude <- renderPrint(all(colnames(input.VCF@gt)[-1] == pop.data$AccessID))
    
    # Converting the dataset to a genlight object
@@ -158,8 +167,26 @@ server <- function(input, output) {
    
    # genlight object summary output
    output$gl <- renderPrint(gl.object)
+  
+   ## Number of PCs to use in Analysis  
+   # Optimal number of PCs based off of a-score
+   optim.num <- optim.a.score(pnw.dapc)
+   optim.num$best
+   # Number of eigenvalues to retain to account for 80% of the variation
+   w <- which(cumsum(100*pca$eig/sum(pca$eig)) >= 80)
    
-   pca <- glPca(gl.object, nf = 4)
+   pca <- glPca(gl.object, nf = w[1])
+   pnw.dapc <- dapc(gl.object, n.pca = w[1], n.da = nlevels(gl.object$pop)-1)
+   
+   if (input$PCradio == 1){
+     pc.num <- optim.num$best
+    }
+   if (input$PCradio == 2){
+     pc.num <- w[1]
+   }
+   
+   # Make the PCA
+   pca <- glPca(gl.object, nf = pc.num)
    output$eigenval <- renderPlot(barplot(100*pca$eig/sum(pca$eig), col = heat.colors(50), 
                                          main="PCA Eigenvalues", 
                                          ylab="Percent of variance explained",  
@@ -177,7 +204,7 @@ server <- function(input, output) {
      geom_vline(xintercept = 0))
    
    # Create a compoplot or Structure Plot
-   pnw.dapc <- dapc(gl.object, n.pca = 4, n.da = nlevels(gl.object$pop)-1)
+   pnw.dapc <- dapc(gl.object, n.pca = pc.num, n.da = nlevels(gl.object$pop)-1)
    
    dapc.results <- as.data.frame(pnw.dapc$posterior)
    dapc.results$pop <- pop(gl.object)

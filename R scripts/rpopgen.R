@@ -5,18 +5,9 @@ library(ape)
 library(RColorBrewer)
 library(reshape2)
 
-input.VCF <- read.vcfR("test2.vcf")
+input.VCF <- read.vcfR("test1.vcf")
+pop.data <- read.csv("test1pops.csv")
 
-VCFFile <- input$VCF
-input.VCF <- read.vcfR(VCFFile$datapath)
-
-output$vcfsum <- renderPrint(input.VCF)
-# ***** Object of Class vcfR *****
-#   62 samples
-# 1 CHROMs
-# 7,750 variants
-
-pop.data <- read.table("vcfpops.txt", sep = "\t", header = TRUE)
 
 # We can now check that all the samples in the VCF and the population data frame are included:
 all(colnames(input.VCF@gt)[-1] == pop.data$AccessID)
@@ -32,7 +23,6 @@ ploidy(gl.object) <- 2
 pop(gl.object) <- pop.data$Population
 
 gl.object
-output$gl <- renderPrint(gl.object)
 
 ########### Subset VCF 1000 random varients ###############
 
@@ -70,6 +60,17 @@ pca.scores <- as.data.frame(pca$scores)
 pca.scores$pop <- pop(gl.object)
 
 
+  # determine the number of pc's to retain
+
+w <- which(cumsum(100*pca$eig/sum(pca$eig)) >= 80)
+w[1]
+
+optim.num <- optim.a.score(pnw.dapc)
+optim.num$best
+
+
+
+
 set.seed(9)
 p <- ggplot(pca.scores, aes(x=PC1, y=PC2, colour=pop))
 p <- p + geom_point(size=2)
@@ -82,7 +83,7 @@ p <- p + theme_bw()
 p
 
 ################ Structure-like plot ##############
-pnw.dapc <- dapc(gl.test2, n.pca = 4, n.da = 2)
+pnw.dapc <- dapc(gl.object, n.pca = 39, n.da = 1)
 
 dapc.results <- as.data.frame(pnw.dapc$posterior)
 dapc.results$pop <- pop(gl.test2)
@@ -98,3 +99,17 @@ p <- p + scale_fill_manual(values = cols)
 p <- p + facet_grid(~Original_Pop, scales = "free")
 p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
 p
+
+
+###############
+
+dp <- extract.gt(input.VCF, element = "DP", as.numeric=TRUE)
+sum(is.na(dp[,1]))
+
+myMiss <- apply(dp, MARGIN = 2, function(x){ sum(is.na(x)) })
+myMiss <- myMiss/nrow(input.VCF)
+
+
+par(mar = c(12,4,4,2))
+barplot(myMiss, las = 2, col = 1:12)
+title(ylab = "Missingness (%)")
