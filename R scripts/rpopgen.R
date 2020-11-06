@@ -4,6 +4,7 @@ library(poppr)
 library(ape)
 library(RColorBrewer)
 library(reshape2)
+library(sequoia)
 
 input.VCF <- read.vcfR("test1.vcf")
 pop.data <- read.csv("test1pops.csv")
@@ -113,3 +114,15 @@ myMiss <- myMiss/nrow(input.VCF)
 par(mar = c(12,4,4,2))
 barplot(myMiss, las = 2, col = 1:12)
 title(ylab = "Missingness (%)")
+
+
+##################################
+
+system.time( my_loci <- vcfR2loci(input.VCF) )
+class(my_loci)
+
+
+geno <- read.csv("Geno.csv")
+class(geno)
+
+ID5885 <- my_loci[2,1:100]
