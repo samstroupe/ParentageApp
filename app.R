@@ -1,7 +1,7 @@
 library(shiny)
 library(sequoia)
 library(Rcpp)
-library(pedantics)
+#library(pedantics)
 library(kinship2)
 library(ggplot2)
 library(vcfR)
@@ -250,25 +250,25 @@ server <- function(input, output) {
   incProgress(amount = 10/10, detail = "Done")
     })
 
-    ## Plot Pedigree ##  
-                 output$pedigree <- renderPlot({
-  if (input$radio == 1){
-    plot <- drawPedigree(Ped, dots = "y", dotSize = .005)
-  }
-  if (input$radio == 2){
-    # Plot the pedegree
-    ped2 <- fixPedigree(Ped)
-    # Order the id columns the same
-    ped2 = ped2[order(ped2$id),]
-    LHis2 = LHis2[order(LHis2$ID),]
-    # Assign the Life History sex to the pedigree 
-    ped2$Sex = LHis2$Sex
-    
-    ped2 <- pedigree(id = ped2$id, dadid = ped2$sire, momid = ped2$dam, sex = LHis2$Sex)
-    plot <- plot(ped2)
-  }
-  plot
-  })
+    ## Plot Pedigree- **Needs to befixed ##  
+  #                output$pedigree <- renderPlot({
+  # if (input$radio == 1){
+  #   plot <- drawPedigree(Ped, dots = "y", dotSize = .005)
+  # }
+  # if (input$radio == 2){
+  #   # Plot the pedegree
+  #   ped2 <- fixPedigree(Ped)
+  #   # Order the id columns the same
+  #   ped2 = ped2[order(ped2$id),]
+  #   LHis2 = LHis2[order(LHis2$ID),]
+  #   # Assign the Life History sex to the pedigree 
+  #   ped2$Sex = LHis2$Sex
+  #   
+  #   ped2 <- pedigree(id = ped2$id, dadid = ped2$sire, momid = ped2$dam, sex = LHis2$Sex)
+  #   plot <- plot(ped2)
+  # }
+  # plot
+  # })
  
   ############ POPULATION GENETIC EVALUATION ################
       ### VCF ###
