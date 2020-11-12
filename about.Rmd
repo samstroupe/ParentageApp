@@ -3,29 +3,159 @@ title: "About"
 author: "Sam Stroupe"
 output: html_document
 ---
+<center>
+<p><a href="https://vetmed.tamu.edu/dnacore/"><img src="www/DNA_CoreLab_logo.png" width="75%" height="75%"></a></p>
+<div style="margin-bottom:20px;">
+</div>
+<h1 style="font-size:200%;">Sam Stroupe</h1>
+<h1 style="font-size:150%;"><i><a href = "mailto:samstroupe@tamu.edu?subject = Parentage App Feedback&body = Message">
+samstroupe@tamu.edu
+</a></i></h1>
+</center>
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+<div style="margin-bottom:75px;">
+</div>
 
-#### samstroupe@tamu.edu 
 
-> library(shiny)
+<style>
+.boxBorder {
+     border: 3px solid #000000;
+     padding: 1em;
+     background: Beige;
+     border-radius: 10px
+     
+}
+</style>
+
+<div class="boxBorder">
+
+<p>The primary purpose of this app is to create a user friendly way to take advantage of R packages for parentage assignment and population evaluation using genomic data. The code is available through <a href="https://github.com/samstroupe/ParentageApp">GitHub</a>. To use this locally, run the following code in R.</p>
+<p><code>
 runGitHub("ParentageApp", "samstroupe")
+</code></p>
 
-The primary purpose of this app is to create a user friendly way to take advantage of R packages for parentage assignment and population evaluation using genomic data. The parentage assignment function of this app uses the R package [Sequoia](https://github.com/JiscaH/sequoia) to determine the best sire and dam for each offspring (Huisman 2017).  The data input is a genotype file in plink.raw format and a csv file with ID, Sex and Birth Year of each sample. [VCFtools](https://vcftools.github.io/man_latest.html) and [Plink](https://www.cog-genomics.org/plink2) can be used to get a vcf file into the correct file format for this app using the follow lines of code in the command line:
+<h1 style="font-size:150%;">Parentage Assignment:</h1>
+<p>The parentage assignment function of this app uses the R package <a href="https://github.com/JiscaH/sequoia">Sequoia</a> to determine the best sire and dam for each offspring (Huisman 2017).  The data input is a genotype file in plink.raw format and a csv file with ID, Sex and Birth Year of each sample. <a href="https://vcftools.github.io/man_latest.html">VCFtools</a> and <a href="https://www.cog-genomics.org/plink2">Plink</a> can be used to get a vcf file into the correct file format for this app using the follow lines of code in the command line:</p>
 
-> $ vcftools --vcf file.vcf --plink --out fileset   
-$ plink --file fileset --recode A --out file_output
+<code>
+<p>$ vcftools --vcf file.vcf --plink --out fileset</p>   
+<p>$ plink --file fileset --recode A --out file_output</p>
+</code>
+<p> The Life History file is a csv file with an ID, Sex, BY (Birth Year), and Population Column. 
+<ul>
+<li>ID: It is probably safest to stick to R’s ‘syntactically valid names’, defined as
+“consists of letters, numbers and the dot or underline characters and starts with a
+letter, or the dot not followed by a number”</li>
+<li>Sex: 1 = female, 2 = male, 3=unknown, 4=hermaphrodites. All other numbers,
+letters, or NA = unknown</li>
+<li>BirthYear: Year of birth/hatching/germination. NA if birth year is unknown. </li>
+</ul>
+The file should look like the table below with the column headers being identical to this example. Additional columns such as population and other demographic information can be included in the input files so long as the ID, Sex and BY are present.
 
-Various packages were used to evaluate population genetics data through this app. Many of the packages used were developed by the Grünwald lab. They have a helpful tutorial [here](http://grunwaldlab.github.io/Population_Genetics_in_R/index.html) for explanation on the methods used in this app and more. The input for these packages is a filtered vcf with only biallelic SNPs.
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
 
-***
-The following packages were used to create this app: shiny, sequoia, Rcpp, pedantics, kinship2, ggplot2, vcfR, poppr, ape, RColorBrewer, reshape2, adegenet, cowplot, Cairo, shinyWidgets, grDevices, shinyjs, and shinythemes.
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
 
-***
-#### References:
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
 
-Huisman, J. (2017). Pedigree reconstruction from SNP data: parentage assignment, sibship clustering and beyond. Molecular ecology resources, 17(5), 1009-1024.  
-Niklaus J. Grünwald, Zhian N. Kamvar, Sydney E. Everhart, Javier F. Tabima, and Brian J. Knaus © 2017, Corvallis, Oregon, USA
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Sex</th>
+    <th>BY</th>
+  </tr>
+  <tr>
+    <td>Sample_01</td>
+    <td>2</td>
+    <td>2005</td>
+  </tr>
+  <tr>
+    <td>Sample_02</td>
+    <td>1</td>
+    <td>2008</td>
+  </tr>
+  <tr>
+    <td>Sample_03</td>
+    <td>1</td>
+    <td>2017</td>
+  </tr>
+  <tr>
+    <td>Sample_04</td>
+    <td>NA</td>
+    <td>2020</td>
+  </tr>
+  <tr>
+    <td>Sample_05</td>
+    <td>2</td>
+    <td>NA</td>
+  </tr>
+  <tr>
+   <td>Sample_06</td>
+    <td>1</td>
+    <td>2020</td>
+  </tr>
+</table>
 
+<hr>
+<h1 style="font-size:150%;">Population Evaluation:</h1>
+<p>Various packages which are listed below were used to evaluate population genetics data through this app. The purpose of the population evaluation functions are to quickly and easily identify variation and population substructure among samples. Many of the packages used were developed by the Grünwald lab. They have a helpful tutorial <a href="http://grunwaldlab.github.io/Population_Genetics_in_R/index.html">here</a> for explanation on the methods used in this app and more. The input for these packages is a filtered vcf with only biallelic SNPs.<a href="https://vcftools.github.io/man_latest.html">VCFtools</a>, <a href="https://www.cog-genomics.org/plink2">Plink</a>, <a href="http://samtools.github.io/bcftools/bcftools.html">BCFtools</a>, and <a href="https://gatk.broadinstitute.org/hc/en-us">GATK</a> are all good sources on how to filter and manipulate genetic & genomic data. The population input file is a simple csv file with a column for the ID and Population. The App only takes the two needed columns, so like the Life History file explanation above additional columns may be present in this input as well.  it is important to note the headers must be identical to the example below.</p>
+
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Population</th>
+    <th>Additional</th>
+  </tr>
+  <tr>
+    <td>Sample_01</td>
+    <td>Pop_01</td>
+    <td>Columns</td>
+  </tr>
+  <tr>
+    <td>Sample_02</td>
+    <td>Pop_01</td>
+    <td>may</td>
+  </tr>
+  <tr>
+    <td>Sample_03</td>
+    <td>Pop_02</td>
+    <td>be</td>
+  </tr>
+  <tr>
+    <td>Sample_04</td>
+    <td>Pop_02</td>
+    <td>present</td>
+  </tr>
+  <tr>
+    <td>Sample_05</td>
+    <td>Pop_02</td>
+    <td>in</td>
+  </tr>
+  <tr>
+   <td>Sample_06</td>
+    <td>Pop_01</td>
+    <td>file</td>
+  </tr>
+</table>
+
+<h1 style="font-size:150%;">R Packages Used:</h1>
+<p>shiny, sequoia, Rcpp, pedantics, kinship2, ggplot2, vcfR, poppr, ape, RColorBrewer, reshape2, adegenet, cowplot, Cairo, shinyWidgets, grDevices, shinyjs, and shinythemes</p>
+
+
+<h1 style="font-size:150%;">References:</h1>
+<p>Huisman, J. (2017). Pedigree reconstruction from SNP data: parentage assignment, sibship clustering and beyond. Molecular ecology resources, 17(5), 1009-1024.</p>  
+<p>Niklaus J. Grünwald, Zhian N. Kamvar, Sydney E. Everhart, Javier F. Tabima, and Brian J. Knaus © 2017, Corvallis, Oregon, USA</p>
+
+</div>

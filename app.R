@@ -16,19 +16,27 @@ library(shinyWidgets)
 library(grDevices)
 library(shinyjs)
 library(shinythemes)
+library(markdown)
+library(DT)
 
 ###### UI #######
 ui <- fluidPage(
+   useShinyjs(),
       ## Set the theme of the APP
-   fluidPage(theme = shinytheme("slate"),
-   HTML('<p><img class="one" src="BisonPic.png" width="100%" height="100%"/></p>'),
+     theme = shinytheme("sandstone"),
+    # theme = "sandstone.css",
+         # Bison Picture as background image    
+      setBackgroundImage(src="BisonPic.png"),
+         # Bison picture as image fixed to top
+   # HTML('<p><img class="one" src="BisonPic.png" width="100%" height="100%"/></p>'),
  tagList(
-    #tags$head(tags$script(type="text/javascript", src = "code.js")),
-    navbarPage(title = div(img(src='bison_dna_logo_bc.png',
+    
+    
+    navbarPage( position = "fixed-top", #tags$style(type="text/css", "body {padding-top: 70px;}"),
+                
+       title = div(img(src='bison_dna_white.png',
                                style="margin-top: -14px; padding-right:10px;padding-bottom:10px", 
                                height = 60)),
-               
-               
                          
             ## Panel for Sequoia Parentage Testing ##
    tabPanel("Parentage Assignment",
@@ -66,10 +74,12 @@ ui <- fluidPage(
                       )
       ), ##End of parentage side Bar
          
-        mainPanel( tabsetPanel(type = "tabs",
+        mainPanel(
+           tabsetPanel(type = "tabs",
                tabPanel("Parentage Assignment",
                              downloadButton("downloadData", "Download"),
-                             tableOutput("assignment")
+##                             tableOutput("assignment")
+                              DTOutput("assignment")
                              ),
                tabPanel("Pedigree Plot", plotOutput("pedigree"))
             )
@@ -131,18 +141,38 @@ ui <- fluidPage(
       ) #End PopGen Sidebar Layout
    ), #End PopGen tab Panel
    
-       tabPanel("About")
+       tabPanel("About",
+                #includeHTML(rmarkdown::render("about.Rmd")))
+                includeMarkdown("about.Rmd"))
+ ), #End NavbarPage  
+ 
+ ## Style Tags
+   tags$style(type="text/css", "body {padding-top: 70px;}"),
+   tags$style(type = "text/css", "#map {height: calc(100vh - 53px) !important;}"), 
+   tags$style(type = "text/css", ".container-fluid {padding-left:0px;padding-right:0px;}"),
+   tags$style(type = "text/css", ".navbar {margin-bottom: .5px;}"),
+   tags$style(type = "text/css", ".container-fluid .navbar-header 
+               .navbar-brand {margin-left: 0px;}"
+
+              
+         )
+      )
 )
-)
-)
-)
+
+
+
+
+
+
 ########### SERVER #############
+
 server <- function(input, output) {
   
-   observeEvent(input$toggleSidebar, {
-      shinyjs::toggle(id = "Sidebar")
-   })
-   
+   # observeEvent(input$toggleSidebar, {
+   #    shinyjs::toggle(id = "Sidebar")
+   # })
+
+   ############### SEQUOIA PARENTAGE ASSIGNMENT ###################  
  observeEvent(input$run, {
    
     withProgress(message = "Running Sequoia", value = 0, {
@@ -181,12 +211,25 @@ server <- function(input, output) {
                     MaxSibIter = MaxSI, Err = Err, MaxMismatch = MaxMismatch)
 
     Ped <- SeqOUT$Pedigree
-    Ped = Ped[order(as.numeric(Ped$id)), ]
+    Ped <- Ped[order(as.numeric(Ped$id)), ]
+                 })  
 
+                       
+    if (input$checkbox == TRUE){
+       Ped <- Ped[complete.cases(Ped),]}
+    else {
+       Ped <- Ped[(Ped), ]  
+    }    
+    
     incProgress(amount = 8/10, detail = "Done")
-  output$assignment <- renderTable({Ped[complete.cases(Ped), ]
-         })
-  incProgress(amount = 10/10, detail = "Done")
+## output$assignment <- renderTable({Ped[complete.cases(Ped), ] })
+    
+    
+    output$assignment <- DT::renderDT({datatable(Ped)   
+       })
+  
+    
+    incProgress(amount = 10/10, detail = "Done") #Progress Meter
   
   
   
@@ -207,9 +250,8 @@ server <- function(input, output) {
   incProgress(amount = 10/10, detail = "Done")
     })
 
-    ## Pedigree  
-  output$pedigree <- renderPlot({
-  
+    ## Plot Pedigree ##  
+                 output$pedigree <- renderPlot({
   if (input$radio == 1){
     plot <- drawPedigree(Ped, dots = "y", dotSize = .005)
   }
@@ -227,9 +269,8 @@ server <- function(input, output) {
   }
   plot
   })
-  })
  
-  
+  ############ POPULATION GENETIC EVALUATION ################
       ### VCF ###
  observeEvent(input$runvcf, {
    # read in VCF File
@@ -347,7 +388,7 @@ server <- function(input, output) {
       )
       
       
-################################     
+         ##### POP-GEN Clustering Plots ######   
    # Set the Max & Min K and number of PCAs to be retained
    
    maxK <- input$n
