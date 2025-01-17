@@ -37,10 +37,12 @@ runGitHub("ParentageApp", "samstroupe")
 <h1 style="font-size:150%;">Parentage Assignment:</h1>
 <p>The parentage assignment function of this app uses the R package <a href="https://jiscah.github.io/index.html">Sequoia</a> <a href="https://github.com/JiscaH/sequoia">(Github)</a> to determine the best sire and dam for each offspring <a href="https://onlinelibrary.wiley.com/doi/10.1111/1755-0998.12665">(Huisman 2017)</a>. The data input is a genotype file in plink.raw format and a csv file with ID, Sex and Birth Year of each sample. <a href="https://vcftools.github.io/man_latest.html">VCFtools</a> and <a href="https://www.cog-genomics.org/plink2">Plink</a> can be used to get a vcf file into the correct file format for this app using the follow lines of code in the command line:</p>
 
-<code>
-<p>$ vcftools --vcf file.vcf --plink --out fileset</p>   
-<p>$ plink --file fileset --recode A --out file_output</p>
-</code>
+<p><code>
+vcftools --vcf file.vcf --plink --out fileset 
+</code></p>
+<p><code>
+plink --file fileset --recode A --out file_output
+</code></p>
 <p> The Life History file is a csv file with an ID, Sex, BY (Birth Year) Column. Optionally, you can include three additional columns BY.min, BY.max, and Year.last. 
 <ul>
 <li>ID: It is probably safest to stick to R’s ‘syntactically valid names’, defined as
@@ -134,7 +136,7 @@ tr:nth-child(even) {
 
 <hr>
 <h1 style="font-size:150%;">Population Evaluation:</h1>
-<p>Various packages which are listed below were used to evaluate population genetics data through this app. The purpose of the population evaluation functions are to quickly and easily identify variation and population substructure among samples. Many of the packages used were developed by the Grünwald lab. They have a helpful tutorial <a href="http://grunwaldlab.github.io/Population_Genetics_in_R/index.html">here</a> for explanation on the methods used in this app and more. The input for these packages is a filtered vcf with only biallelic SNPs. <a href="https://vcftools.github.io/man_latest.html">VCFtools</a>, <a href="https://www.cog-genomics.org/plink2">Plink</a>, <a href="http://samtools.github.io/bcftools/bcftools.html">BCFtools</a>, and <a href="https://gatk.broadinstitute.org/hc/en-us">GATK</a> are all good sources on how to filter and manipulate genetic & genomic data. The population input file is a simple csv file with a column for the ID and Population. The App only takes the two needed columns, so like the Life History file explanation above additional columns may be present in this input as well. It is important to note the 'ID' and 'Population' column headers must be identical to the example below.</p>
+<p>Various packages which are listed below were used to evaluate population genetics data through this app. The purpose of the population evaluation functions are to quickly and easily identify variation and population substructure among samples. Many of the packages used were developed by the Grünwald lab. They have a helpful tutorial <a href="http://grunwaldlab.github.io/Population_Genetics_in_R/index.html">here</a> for explanation on the methods used in this app and more. The input for these packages is a filtered vcf with only biallelic SNPs. <a href="https://vcftools.github.io/man_latest.html">VCFtools</a>, <a href="https://www.cog-genomics.org/plink2">Plink</a>, <a href="http://samtools.github.io/bcftools/bcftools.html">BCFtools</a>, and <a href="https://gatk.broadinstitute.org/hc/en-us">GATK</a> are all good sources on how to filter and manipulate genetic & genomic data. The population input file is a simple csv file with a column for the ID and Population. The App only takes the two needed columns, similar to the Life History file, additional columns may be present in this input as well. It is important to note the 'ID' and 'Population' column headers must be identical to the example below.</p>
 
 <table>
   <tr>

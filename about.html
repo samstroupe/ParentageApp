@@ -410,14 +410,12 @@ csv file with ID, Sex and Birth Year of each sample.
 get a vcf file into the correct file format for this app using the
 follow lines of code in the command line:
 </p>
-<code>
 <p>
-$ vcftools –vcf file.vcf –plink –out fileset
+<code> vcftools –vcf file.vcf –plink –out fileset </code>
 </p>
 <p>
-$ plink –file fileset –recode A –out file_output
+<code> plink –file fileset –recode A –out file_output </code>
 </p>
-</code>
 <p>
 The Life History file is a csv file with an ID, Sex, BY (Birth Year)
 Column. Optionally, you can include three additional columns BY.min,
@@ -613,10 +611,10 @@ these packages is a filtered vcf with only biallelic SNPs.
 and <a href="https://gatk.broadinstitute.org/hc/en-us">GATK</a> are all
 good sources on how to filter and manipulate genetic &amp; genomic data.
 The population input file is a simple csv file with a column for the ID
-and Population. The App only takes the two needed columns, so like the
-Life History file explanation above additional columns may be present in
-this input as well. It is important to note the ‘ID’ and ‘Population’
-column headers must be identical to the example below.
+and Population. The App only takes the two needed columns, similar to
+the Life History file, additional columns may be present in this input
+as well. It is important to note the ‘ID’ and ‘Population’ column
+headers must be identical to the example below.
 </p>
 <table>
 <tr>
