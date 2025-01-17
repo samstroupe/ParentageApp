@@ -59,7 +59,7 @@ ui <- fluidPage(
  
                tags$div(dropdownButton(
                   tags$h3("Parameters for Sequoia"),
-                  checkboxInput("checkbox", label = "Print only complete parentage matches", value = TRUE),
+                  checkboxInput("checkbox", label = "Print only complete parentage matches", value = FALSE),
                   numericInput("Err", "Genotype Error Rate:", min = 0, max = 1, value = 0.01),
                   numericInput("MM", "Max Mismatches:", min = 0, max = 10000, value = 20),
                   circle = FALSE, status = "warning", icon = icon("gear"), width = "300px",
@@ -206,7 +206,7 @@ server <- function(input, output) {
             MaxMismatch <- input$MM
         
       ParOUT <- sequoia(GenoM = Geno,
-                    LifeHistData = LHis,
+                    LifeHistData = LHis1,
                     Err = Err, 
                     MaxMismatch = MaxMismatch, 
                     FindMaybeRel = T, CalcLLR = T)
@@ -228,7 +228,12 @@ server <- function(input, output) {
 ## output$assignment <- renderTable({Ped[complete.cases(Ped), ] })
     
     
-    output$assignment <- DT::renderDT({datatable(Ped)   
+    output$assignment <- DT::renderDT({
+      datatable(Ped)   %>%
+        DT::formatStyle(
+          columns = 1:ncol(Ped),  # Apply style to all columns
+          backgroundColor = "rgba(245, 245, 220, 1)"
+        )
        })
   
     
