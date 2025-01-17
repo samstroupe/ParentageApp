@@ -1,3 +1,6 @@
+#install.packages(c("shiny", "sequoia", "Rcpp", "kinship2", "ggplot2", "vcfR", "poppr", "ape", "RColorBrewer",
+    #               "reshape2", "adegenet", "cowplot", "Cairo", "shinyWidgets", "grDevices", "shinyjs", "shinythemes",
+    #               "markdown", "DT"))
 library(shiny)
 library(sequoia)
 library(Rcpp)
@@ -37,7 +40,10 @@ ui <- fluidPage(
        title = div(img(src='bison_dna_white.png',
                                style="margin-top: -14px; padding-right:10px;padding-bottom:10px", 
                                height = 60)),
-                         
+        tabPanel("Home",
+                #includeHTML(rmarkdown::render("about.Rmd")))
+                includeMarkdown("about.Rmd")),
+       
             ## Panel for Sequoia Parentage Testing ##
    tabPanel("Parentage Assignment",
       sidebarLayout(
@@ -54,9 +60,8 @@ ui <- fluidPage(
                tags$div(dropdownButton(
                   tags$h3("Parameters for Sequoia"),
                   checkboxInput("checkbox", label = "Print only complete parentage matches", value = TRUE),
-                  numericInput("Err", "Genotype Error Rate:", min = 0, max = 1, value = 0.001),
+                  numericInput("Err", "Genotype Error Rate:", min = 0, max = 1, value = 0.01),
                   numericInput("MM", "Max Mismatches:", min = 0, max = 10000, value = 20),
-                  numericInput("MSI", "Iterations of Sibship Clustering:", min = 0, max = 100, value = 5),
                   circle = FALSE, status = "warning", icon = icon("gear"), width = "300px",
                   tooltip = tooltipOptions(title = "Adjust Parameters for Parentage Assignment")),
                   style="display:inline-block"
@@ -139,11 +144,9 @@ ui <- fluidPage(
           ) # End of PopGen main Panel
        
       ) #End PopGen Sidebar Layout
-   ), #End PopGen tab Panel
+   ) #End PopGen tab Panel
    
-       tabPanel("About",
-                #includeHTML(rmarkdown::render("about.Rmd")))
-                includeMarkdown("about.Rmd"))
+      
  ), #End NavbarPage  
  
  ## Style Tags
@@ -194,32 +197,32 @@ server <- function(input, output) {
     incProgress(amount = 1/10, detail = "Converting Genotype File")
      Geno <- GenoConvert(InFile = GenoFile$datapath, InFormat = "raw")
 
-   levels(LHis1$Sex) <- sub("female", "1", levels(LHis1$Sex))
-   levels(LHis1$Sex) <- sub("male", "2", levels(LHis1$Sex))
-   levels(LHis1$Sex) <- sub("unknown", "3", levels(LHis1$Sex))
+   levels(LHis1$Sex) <- sub("female|f", "1", levels(LHis1$Sex), ignore.case = TRUE)
+   levels(LHis1$Sex) <- sub("male|m", "2", levels(LHis1$Sex), ignore.case = TRUE)
+   levels(LHis1$Sex) <- sub("unknown|u", "3", levels(LHis1$Sex), ignore.case = TRUE)
    
    incProgress(amount = 3/10, detail = "Assigning Potential Parents")
             Err <- input$Err  # adjust the parameters for sequoia using the widgets
             MaxMismatch <- input$MM
-            MaxSI <- input$MSI
+        
       ParOUT <- sequoia(GenoM = Geno,
-                    LifeHistData = LHis1,
-                    MaxSibIter = 0, Err = Err, MaxMismatch = MaxMismatch, FindMaybeRel = T, CalcLLR = T)
+                    LifeHistData = LHis,
+                    Err = Err, 
+                    MaxMismatch = MaxMismatch, 
+                    FindMaybeRel = T, CalcLLR = T)
+      
    incProgress(amount = 6/10, detail = "Constructing Full Pedigree")
-      SeqOUT <- sequoia(GenoM = Geno,
-                    SeqList = ParOUT,
-                    MaxSibIter = MaxSI, Err = Err, MaxMismatch = MaxMismatch)
+      
 
-    Ped <- SeqOUT$Pedigree
+    Ped <- ParOUT$PedigreePar
     Ped <- Ped[order(as.numeric(Ped$id)), ]
                  })  
 
-                       
+
     if (input$checkbox == TRUE){
        Ped <- Ped[complete.cases(Ped),]}
-    else {
-       Ped <- Ped[(Ped), ]  
-    }    
+    else { # Pedigree remains the same
+    }
     
     incProgress(amount = 8/10, detail = "Done")
 ## output$assignment <- renderTable({Ped[complete.cases(Ped), ] })
@@ -239,12 +242,8 @@ server <- function(input, output) {
       paste(input$Geno, "Parentage", ".csv", sep = "")
          },
     content = function(file) {
-       if (input$checkbox == TRUE){
-      write.csv(Ped[complete.cases(Ped), ], file, row.names = F)}
-       else {
-          write.csv(Ped[(Ped), ], file, row.names = F)  
+       write.csv(Ped, file)
        }
-         }
           )
   
   incProgress(amount = 10/10, detail = "Done")

@@ -8,7 +8,7 @@ output: html_document
 <div style="margin-bottom:20px;">
 </div>
 <h1 style="font-size:200%;">Sam Stroupe</h1>
-<h1 style="font-size:150%;"><i><a href = "mailto:samstroupe@tamu.edu?subject = Parentage App Feedback&body = Message">
+<h1 style="font-size:150%;"><i><a href = "mailto:samstroupe@tamu.edu?subject = ParentageApp Feedback&body = Message">
 samstroupe@tamu.edu
 </a></i></h1>
 </center>
@@ -29,19 +29,19 @@ samstroupe@tamu.edu
 
 <div class="boxBorder">
 
-<p>The primary purpose of this app is to create a user friendly way to take advantage of R packages for parentage assignment and population evaluation using genomic data. The code is available through <a href="https://github.com/samstroupe/ParentageApp">GitHub</a>. To use this locally, run the following code in R.</p>
+<p>The primary purpose of this app is to create a user friendly way to take advantage of R packages for parentage assignment and population evaluation using genomic data. The code is available through <a href="https://github.com/samstroupe/ParentageApp">GitHub</a>. To use this locally, install the R packages listed at the bottom of this page then run the following code in R.</p>
 <p><code>
 runGitHub("ParentageApp", "samstroupe")
 </code></p>
 
 <h1 style="font-size:150%;">Parentage Assignment:</h1>
-<p>The parentage assignment function of this app uses the R package <a href="https://github.com/JiscaH/sequoia">Sequoia</a> to determine the best sire and dam for each offspring (Huisman 2017).  The data input is a genotype file in plink.raw format and a csv file with ID, Sex and Birth Year of each sample. <a href="https://vcftools.github.io/man_latest.html">VCFtools</a> and <a href="https://www.cog-genomics.org/plink2">Plink</a> can be used to get a vcf file into the correct file format for this app using the follow lines of code in the command line:</p>
+<p>The parentage assignment function of this app uses the R package <a href="https://jiscah.github.io/index.html">Sequoia</a> <a href="https://github.com/JiscaH/sequoia">(Github)</a> to determine the best sire and dam for each offspring <a href="https://onlinelibrary.wiley.com/doi/10.1111/1755-0998.12665">(Huisman 2017)</a>. The data input is a genotype file in plink.raw format and a csv file with ID, Sex and Birth Year of each sample. <a href="https://vcftools.github.io/man_latest.html">VCFtools</a> and <a href="https://www.cog-genomics.org/plink2">Plink</a> can be used to get a vcf file into the correct file format for this app using the follow lines of code in the command line:</p>
 
 <code>
 <p>$ vcftools --vcf file.vcf --plink --out fileset</p>   
 <p>$ plink --file fileset --recode A --out file_output</p>
 </code>
-<p> The Life History file is a csv file with an ID, Sex, BY (Birth Year), and Population Column. 
+<p> The Life History file is a csv file with an ID, Sex, BY (Birth Year) Column. Optionally, you can include three additional columns BY.min, BY.max, and Year.last. 
 <ul>
 <li>ID: It is probably safest to stick to R’s ‘syntactically valid names’, defined as
 “consists of letters, numbers and the dot or underline characters and starts with a
@@ -49,8 +49,11 @@ letter, or the dot not followed by a number”</li>
 <li>Sex: 1 = female, 2 = male, 3=unknown, 4=hermaphrodites. All other numbers,
 letters, or NA = unknown</li>
 <li>BirthYear: Year of birth/hatching/germination. NA if birth year is unknown. </li>
+<li>BY.min: minimum birth year, only used if BirthYear is missing. </li>
+<li>BY.max: maximum birth year, only used if BirthYear is missing. </li>
+<li>Year.last: Last year in which individual could have had offspring. E.g. the year before death for females, the year after death for males, or year an animal was sold/transferred. </li>
 </ul>
-The file should look like the table below with the column headers being identical to this example. Additional columns such as population and other demographic information can be included in the input files so long as the ID, Sex and BY are present.
+The file should look like the table below with the column headers being identical to this example. At minimum, the file must be three columns with ID, Sex, and BY.
 
 <style>
 table {
@@ -75,42 +78,63 @@ tr:nth-child(even) {
     <th>ID</th>
     <th>Sex</th>
     <th>BY</th>
+    <th>BY.min</th>
+    <th>BY.max</th>
+    <th>Year.last</th>
   </tr>
   <tr>
     <td>Sample_01</td>
     <td>2</td>
     <td>2005</td>
+    <td></td>
+    <td></td>
+    <td></td>
   </tr>
   <tr>
     <td>Sample_02</td>
     <td>1</td>
     <td>2008</td>
+    <td></td>
+    <td></td>
+    <td>2022</td>
   </tr>
   <tr>
     <td>Sample_03</td>
     <td>1</td>
     <td>2017</td>
+    <td></td>
+    <td></td>
+    <td></td>
   </tr>
   <tr>
     <td>Sample_04</td>
     <td>NA</td>
     <td>2020</td>
+    <td></td>
+    <td></td>
+    <td></td>
   </tr>
   <tr>
     <td>Sample_05</td>
     <td>2</td>
     <td>NA</td>
+    <td>2014</td>
+    <td>2016</td>
+    <td></td>
   </tr>
   <tr>
    <td>Sample_06</td>
     <td>1</td>
     <td>2020</td>
+    <td></td>
+    <td></td>
+    <td></td>
   </tr>
 </table>
 
 <hr>
 <h1 style="font-size:150%;">Population Evaluation:</h1>
-<p>Various packages which are listed below were used to evaluate population genetics data through this app. The purpose of the population evaluation functions are to quickly and easily identify variation and population substructure among samples. Many of the packages used were developed by the Grünwald lab. They have a helpful tutorial <a href="http://grunwaldlab.github.io/Population_Genetics_in_R/index.html">here</a> for explanation on the methods used in this app and more. The input for these packages is a filtered vcf with only biallelic SNPs.<a href="https://vcftools.github.io/man_latest.html">VCFtools</a>, <a href="https://www.cog-genomics.org/plink2">Plink</a>, <a href="http://samtools.github.io/bcftools/bcftools.html">BCFtools</a>, and <a href="https://gatk.broadinstitute.org/hc/en-us">GATK</a> are all good sources on how to filter and manipulate genetic & genomic data. The population input file is a simple csv file with a column for the ID and Population. The App only takes the two needed columns, so like the Life History file explanation above additional columns may be present in this input as well.  it is important to note the headers must be identical to the example below.</p>
+<p>Various packages which are listed below were used to evaluate population genetics data through this app. The purpose of the population evaluation functions are to quickly and easily identify variation and population substructure among samples. Many of the packages used were developed by the Grünwald lab. They have a helpful tutorial <a href="http://grunwaldlab.github.io/Population_Genetics_in_R/index.html">here</a> for explanation on the methods used in this app and more. The input for these packages is a filtered vcf with only biallelic SNPs. <a href="https://vcftools.github.io/man_latest.html">VCFtools</a>, <a href="https://www.cog-genomics.org/plink2">Plink</a>, <a href="http://samtools.github.io/bcftools/bcftools.html">BCFtools</a>, and <a href="https://gatk.broadinstitute.org/hc/en-us">GATK</a> are all good sources on how to filter and manipulate genetic & genomic data. The population input file is a simple csv file with a column for the ID and Population. The App only takes the two needed columns, so like the Life History file explanation above additional columns may be present in this input as well. It is important to note the 'ID' and 'Population' column headers must be identical to the example below.</p>
 
 <table>
   <tr>
@@ -150,8 +174,10 @@ tr:nth-child(even) {
   </tr>
 </table>
 
-<h1 style="font-size:150%;">R Packages Used:</h1>
-<p>shiny, sequoia, Rcpp, pedantics, kinship2, ggplot2, vcfR, poppr, ape, RColorBrewer, reshape2, adegenet, cowplot, Cairo, shinyWidgets, grDevices, shinyjs, and shinythemes</p>
+<h1 style="font-size:150%;"> Install R Packages locally:</h1>
+<p>install.packages(c("shiny", "sequoia", "Rcpp", "kinship2", "ggplot2", "vcfR", "poppr", "ape", "RColorBrewer", "reshape2", "adegenet", "cowplot", "Cairo", "shinyWidgets", "grDevices", "shinyjs", "shinythemes", "markdown", "DT"))</p>
+<p>library(c("shiny", "sequoia", "Rcpp", "kinship2", "ggplot2", "vcfR", "poppr", "ape", 
+"RColorBrewer", "reshape2", "adegenet", "cowplot", "Cairo", "shinyWidgets", "grDevices", "shinyjs", "shinythemes","markdown", "DT"))</p>
 
 
 <h1 style="font-size:150%;">References:</h1>
