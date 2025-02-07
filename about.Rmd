@@ -29,7 +29,7 @@ samstroupe@tamu.edu
 
 <div class="boxBorder">
 
-<p>The primary purpose of this app is to create a user friendly way to take advantage of R packages for parentage assignment and population evaluation using genomic data. The code is available through <a href="https://github.com/samstroupe/ParentageApp">GitHub</a>. To use this locally, install the R packages listed at the bottom of this page then run the following code in R.</p>
+<p>The primary purpose of this app is to create a user friendly way to take advantage of R packages for parentage assignment and population evaluation using genomic data. The code is available through <a href="https://github.com/samstroupe/ParentageApp">GitHub</a>. You can run the latest GitHub version with the following code. Necessary R packages are listed at the bottom of the page.</p>
 <p><code>
 runGitHub("ParentageApp", "samstroupe")
 </code></p>
@@ -176,10 +176,8 @@ tr:nth-child(even) {
   </tr>
 </table>
 
-<h1 style="font-size:150%;"> Install R Packages locally:</h1>
-<p>install.packages(c("shiny", "sequoia", "Rcpp", "kinship2", "ggplot2", "vcfR", "poppr", "ape", "RColorBrewer", "reshape2", "adegenet", "cowplot", "Cairo", "shinyWidgets", "grDevices", "shinyjs", "shinythemes", "markdown", "DT"))</p>
-<p>library(c("shiny", "sequoia", "Rcpp", "kinship2", "ggplot2", "vcfR", "poppr", "ape", 
-"RColorBrewer", "reshape2", "adegenet", "cowplot", "Cairo", "shinyWidgets", "grDevices", "shinyjs", "shinythemes","markdown", "DT"))</p>
+<h1 style="font-size:150%;"> R Packages:</h1>
+<p>"shiny", "sequoia", "Rcpp", "kinship2", "ggplot2", "vcfR", "poppr", "ape", "RColorBrewer", "reshape2", "adegenet", "cowplot", "Cairo", "shinyWidgets", "grDevices", "shinyjs", "shinythemes", "markdown", "DT"</p>
 
 
 <h1 style="font-size:150%;">References:</h1>
