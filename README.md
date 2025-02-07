@@ -7,9 +7,21 @@ The primary purpose of this app is to create a user friendly way to take advanta
 To use this locally, install and load the following R packages.
 **R Packages:**
 ```R
-install.packages(c("shiny", "sequoia", "Rcpp", "kinship2", "ggplot2", "vcfR", "poppr", "ape", "RColorBrewer", "reshape2", "adegenet", "cowplot", "Cairo", "shinyWidgets", "grDevices", "shinyjs", "shinythemes", "markdown", "DT"))
+install.packages(c("shiny", "sequoia", "Rcpp", "kinship2",
+                   "ggplot2", "vcfR", "poppr", "ape", "RColorBrewer",
+                   "reshape2", "adegenet", "cowplot", "Cairo",
+                   "shinyWidgets", "grDevices", "shinyjs", "shinythemes",
+                   "markdown", "DT"))
 
-library(c("shiny", "sequoia", "Rcpp", "kinship2", "ggplot2", "vcfR", "poppr", "ape", "RColorBrewer", "reshape2", "adegenet", "cowplot", "Cairo", "shinyWidgets", "grDevices", "shinyjs", "shinythemes","markdown", "DT"))
+#define vector of packages to load
+some_packages <- c("shiny", "sequoia", "Rcpp", "kinship2", 
+                   "ggplot2", "vcfR", "poppr", "ape", "RColorBrewer", 
+                   "reshape2", "adegenet", "cowplot", "Cairo", 
+                   "shinyWidgets", "grDevices", "shinyjs", "shinythemes",
+                   "markdown", "DT")
+
+#load all packages at once
+lapply(some_packages, library, character.only=TRUE)
 ```
 
 Then you can run the app using:
